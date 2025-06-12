@@ -502,17 +502,17 @@ class AttendanceSystem {
         const id = `CI${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${Math.floor(100 + Math.random() * 900)}`;
         
         // ...生成 newCheckin
-        this.checkins.push(newCheckin);
-        localStorage.setItem('checkinsData', JSON.stringify(this.checkins));
-        
         const newCheckin = {
-            id,
-            title,
-            creator: this.currentUser.username,
-            createTime: new Date(),
-            duration,
-            students: []
+        id,
+        title,
+        creator: this.currentUser.username,
+        createTime: new Date(),
+        duration,
+        students: []
         };
+        this.checkins.push(newCheckin);
+        localStorage.setItem('checkinsData', JSON.stringify(this.checkins)); // 确保先存储
+        this.generateQRCode(id); // 再生成二维码
 
         this.currentCheckin = newCheckin;
         this.checkins.push(newCheckin);
@@ -542,8 +542,13 @@ class AttendanceSystem {
             }
         }, 1000);
         });
-        
+
         }
+    constructor() {
+        this.checkins = JSON.parse(localStorage.getItem('checkinsData')) || [];
+        // ...其他初始化逻辑
+    }
+        
     
     generateQRCode(data) {
     const qrCodeElement = document.getElementById('qr-code');
@@ -765,6 +770,11 @@ class AttendanceSystem {
         });
         // 后续判断学生是否签到...
         }
+        const activeCheckin = this.checkins.find(c => {
+        const createTime = new Date(c.createTime);
+         const expireTime = new Date(createTime.getTime() + c.duration * 60 * 1000);
+        return c.creator === 'teacher1' && expireTime > new Date(); // 增加创建者验证
+        });
         
         if (isSuccess) {
             // 获取当前活跃的签到（如果有）
@@ -912,10 +922,7 @@ class AttendanceSystem {
         alert('导出Excel功能已触发，实际应用中会生成并下载Excel文件');
     }
 
-    constructor() {
-    this.checkins = JSON.parse(localStorage.getItem('checkinsData')) || [];
-    // ...其他初始化逻辑
-    }
+    
 
 }
     
