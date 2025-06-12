@@ -737,6 +737,16 @@ class AttendanceSystem {
         // 随机决定是否成功扫描
         const isSuccess = Math.random() > 0.3;
         
+         if (isSuccess) {
+        // 关键逻辑：找活跃签到（未过期且存在的）
+        const activeCheckin = this.checkins.find(c => {
+            const createTime = new Date(c.createTime);
+            const expireTime = new Date(createTime.getTime() + c.duration * 60 * 1000);
+            return expireTime > new Date(); 
+        });
+        // 后续判断学生是否签到...
+    }
+        
         if (isSuccess) {
             // 获取当前活跃的签到（如果有）
             const activeCheckin = this.checkins.find(c => {
