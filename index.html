@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码签到系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="qrcode.min.js"></script> 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36D399',
+                        neutral: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .btn-hover {
+                @apply transform transition-all duration-300 hover:scale-105;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .hover-scale {
+                transition: transform 0.2s ease-in-out;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 导航栏 -->
+    <nav id="navbar" class="bg-white shadow-md transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-qrcode text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-dark">二维码签到系统</span>
+            </div>
+            <div id="nav-links" class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors duration-300" id="home-link">首页</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors duration-300" id="login-link">登录</a>
+                <a href="#" class="text-gray-700 hover:text-primary transition-colors duration-300" id="register-link">注册</a>
+                <button id="logout-btn" class="hidden bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors duration-300">
+                    <i class="fa fa-sign-out mr-1"></i>退出
+                </button>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-700 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#" class="text-gray-700 hover:text-primary py-2 transition-colors duration-300" id="home-link-mobile">首页</a>
+                <a href="#" class="text-gray-700 hover:text-primary py-2 transition-colors duration-300" id="login-link-mobile">登录</a>
+                <a href="#" class="text-gray-700 hover:text-primary py-2 transition-colors duration-300" id="register-link-mobile">注册</a>
+                <button id="logout-btn-mobile" class="hidden bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors duration-300">
+                    <i class="fa fa-sign-out mr-1"></i>退出
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 欢迎页面 -->
+        <section id="welcome-page" class="text-center py-16">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-6">
+                    简化签到流程，提升课堂效率
+                </h1>
+                <p class="text-gray-600 text-lg mb-8">
+                    二维码签到系统让教师轻松创建签到活动，学生快速完成签到，告别繁琐的纸质签到。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                    <button id="teacher-btn" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        <i class="fa fa-graduation-cap mr-2"></i>教师入口
+                    </button>
+                    <button id="student-btn" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-secondary/50">
+                        <i class="fa fa-user mr-2"></i>学生入口
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 登录页面 -->
+        <section id="login-page" class="hidden py-12">
+            <div class="max-w-md mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-8 transform transition-all duration-500 hover:shadow-xl">
+                    <h2 class="text-2xl font-bold text-center mb-6 text-dark">用户登录</h2>
+                    <div class="mb-4">
+                        <label for="login-username" class="block text-gray-700 font-medium mb-2">用户名</label>
+                        <input type="text" id="login-username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请输入用户名">
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 font-medium mb-2">密码</label>
+                        <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请输入密码">
+                    </div>
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                            <label for="remember-me" class="text-gray-600">记住我</label>
+                        </div>
+                        <a href="#" class="text-primary hover:text-primary/80 transition-colors duration-300">忘记密码?</a>
+                    </div>
+                    <div class="flex flex-col space-y-3">
+                        <button id="login-submit" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            登录
+                        </button>
+                        <div class="text-center text-gray-600">
+                            还没有账号? <a href="#" id="to-register" class="text-primary hover:text-primary/80 transition-colors duration-300">立即注册</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 注册页面 -->
+        <section id="register-page" class="hidden py-12">
+            <div class="max-w-md mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-8 transform transition-all duration-500 hover:shadow-xl">
+                    <h2 class="text-2xl font-bold text-center mb-6 text-dark">用户注册</h2>
+                    <div class="mb-4">
+                        <label for="register-username" class="block text-gray-700 font-medium mb-2">用户名</label>
+                        <input type="text" id="register-username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请输入用户名">
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-password" class="block text-gray-700 font-medium mb-2">密码</label>
+                        <input type="password" id="register-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请输入密码">
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-confirm-password" class="block text-gray-700 font-medium mb-2">确认密码</label>
+                        <input type="password" id="register-confirm-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请再次输入密码">
+                    </div>
+                    <div class="mb-6">
+                        <label for="user-type" class="block text-gray-700 font-medium mb-2">用户类型</label>
+                        <div class="flex space-x-4">
+                            <div class="flex items-center">
+                                <input type="radio" id="teacher-type" name="user-type" value="teacher" class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
+                                <label for="teacher-type" class="ml-2 text-gray-600">教师</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="radio" id="student-type" name="user-type" value="student" class="h-4 w-4 text-primary focus:ring-primary border-gray-300" checked>
+                                <label for="student-type" class="ml-2 text-gray-600">学生</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-3">
+                        <button id="register-submit" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            注册
+                        </button>
+                        <div class="text-center text-gray-600">
+                            已有账号? <a href="#" id="to-login" class="text-primary hover:text-primary/80 transition-colors duration-300">立即登录</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 教师控制面板 -->
+        <section id="teacher-dashboard" class="hidden py-12">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-dark">教师控制面板</h2>
+                    <div class="text-right">
+                        <p class="text-gray-600 mb-1" id="teacher-name">欢迎回来，教师</p>
+                        <p class="text-sm text-gray-500" id="current-date"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-dark">创建签到</h3>
+                            <i class="fa fa-qrcode text-primary text-2xl"></i>
+                        </div>
+                        <div class="mb-4">
+                            <label for="checkin-title" class="block text-gray-700 font-medium mb-2">签到标题</label>
+                            <input type="text" id="checkin-title" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300" placeholder="请输入签到标题">
+                        </div>
+                        <div class="mb-6">
+                            <label for="checkin-duration" class="block text-gray-700 font-medium mb-2">有效时长 (分钟)</label>
+                            <input type="number" id="checkin-duration" min="1" max="120" value="15" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300">
+                        </div>
+                        <button id="create-checkin" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            生成签到二维码
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-semibold text-dark">当前签到</h3>
+                            <i class="fa fa-clock-o text-primary text-2xl"></i>
+                        </div>
+                        <div id="current-checkin" class="hidden">
+                            <div class="text-center mb-4">
+                                <div id="qr-code-container" class="inline-block p-2 bg-white rounded-md shadow-md mb-4">
+                                    <div id="qr-code" class="w-64 h-64 mx-auto"></div>
+                                </div>
+                                <p class="text-gray-600 mb-2" id="checkin-status">有效时间剩余: <span id="time-left" class="font-semibold text-primary">15:00</span></p>
+                                <p class="text-sm text-gray-500 mb-4" id="checkin-id-text">签到ID: <span id="checkin-id" class="font-medium"></span></p>
+                                <button id="stop-checkin" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-red-300">
+                                    结束签到
+                                </button>
+                            </div>
+                        </div>
+                        <div id="no-current-checkin" class="text-center py-8">
+                            <i class="fa fa-calendar-o text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">暂无正在进行的签到</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-dark">签到历史</h3>
+                        <div class="relative">
+                            <input type="text" id="history-search" placeholder="搜索签到记录" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300">
+                            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到标题</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">持续时间</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到人数</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- 历史记录将通过JavaScript动态添加 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-history" class="text-center py-12 hidden">
+                        <i class="fa fa-file-text-o text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">暂无签到历史记录</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 签到详情页面 -->
+        <section id="checkin-detail" class="hidden py-12">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-dark" id="detail-title">签到详情</h2>
+                    <button id="back-to-dashboard" class="flex items-center text-gray-600 hover:text-primary transition-colors duration-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8 transform transition-all duration-300 hover:shadow-xl">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">签到标题</p>
+                            <p class="font-medium text-dark" id="detail-checkin-title">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">创建时间</p>
+                            <p class="font-medium text-dark" id="detail-create-time">-</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">持续时间</p>
+                            <p class="font-medium text-dark" id="detail-duration">-</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-dark">签到统计</h3>
+                            <div class="flex space-x-2">
+                                <button id="export-excel" class="flex items-center bg-green-500 hover:bg-green-600 text-white font-medium py-1 px-3 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-300">
+                                    <i class="fa fa-file-excel-o mr-1"></i> 导出Excel
+                                </button>
+                                <button id="refresh-list" class="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-1 px-3 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                    <i class="fa fa-refresh mr-1"></i> 刷新
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600 mb-1">应到人数</p>
+                                <p class="text-2xl font-bold text-blue-600" id="total-students">0</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600 mb-1">已签到</p>
+                                <p class="text-2xl font-bold text-green-600" id="checked-in">0</p>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600 mb-1">未签到</p>
+                                <p class="text-2xl font-bold text-yellow-600" id="not-checked">0</p>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600 mb-1">签到率</p>
+                                <p class="text-2xl font-bold text-purple-600" id="checkin-rate">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-dark">签到学生列表</h3>
+                        <div class="relative">
+                            <input type="text" id="student-search" placeholder="搜索学生" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300">
+                            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学生姓名</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学号</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到时间</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list-body" class="bg-white divide-y divide-gray-200">
+                                <!-- 学生列表将通过JavaScript动态添加 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-students" class="text-center py-12 hidden">
+                        <i class="fa fa-users text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">暂无学生数据</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生控制面板 -->
+        <section id="student-dashboard" class="hidden py-12">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-dark">学生控制面板</h2>
+                    <div class="text-right">
+                        <p class="text-gray-600 mb-1" id="student-name">欢迎回来，学生</p>
+                        <p class="text-sm text-gray-500" id="current-date-student"></p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8 transform transition-all duration-300 hover:shadow-xl">
+                    <h3 class="text-xl font-semibold text-dark mb-6">扫码签到</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="bg-gray-50 rounded-lg p-6 text-center">
+                                <div id="scan-area" class="w-full h-64 bg-gray-100 rounded-md mb-4 flex items-center justify-center">
+                                    <i class="fa fa-qrcode text-gray-300 text-6xl"></i>
+                                </div>
+                                <button id="start-scan" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                    <i class="fa fa-camera mr-2"></i> 开始扫码
+                                </button>
+                                <p class="text-sm text-gray-500 mt-2">点击按钮开始扫描教师生成的签到二维码</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium text-dark mb-4">签到说明</h4>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-2">
+                                        <i class="fa fa-step-forward text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h5 class="text-sm font-medium text-gray-900">步骤 1</h5>
+                                        <p class="text-sm text-gray-600">点击"开始扫码"按钮，准备扫描教师提供的签到二维码</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-2">
+                                        <i class="fa fa-qrcode text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h5 class="text-sm font-medium text-gray-900">步骤 2</h5>
+                                        <p class="text-sm text-gray-600">将摄像头对准教师展示的二维码，确保二维码清晰可见</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-2">
+                                        <i class="fa fa-check-circle text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h5 class="text-sm font-medium text-gray-900">步骤 3</h5>
+                                        <p class="text-sm text-gray-600">扫描成功后，系统会自动记录你的签到信息并显示签到结果</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-dark">最近签到记录</h3>
+                        <div class="relative">
+                            <input type="text" id="student-history-search" placeholder="搜索签到记录" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300">
+                            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到标题</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到时间</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-history-body" class="bg-white divide-y divide-gray-200">
+                                <!-- 学生签到历史将通过JavaScript动态添加 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-student-history" class="text-center py-12 hidden">
+                        <i class="fa fa-file-text-o text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">暂无签到历史记录</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 扫描结果模态框 -->
+        <div id="scan-result-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+                <div class="p-6">
+                    <div id="success-result" class="hidden text-center">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                            <i class="fa fa-check text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">签到成功</h3>
+                        <p class="text-gray-500 mb-4">你已成功完成签到</p>
+                        <p class="text-sm text-gray-500 mb-6" id="checkin-success-info"></p>
+                        <button id="close-success-modal" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            确定
+                        </button>
+                    </div>
+                    <div id="error-result" class="hidden text-center">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                            <i class="fa fa-times text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">签到失败</h3>
+                        <p class="text-gray-500 mb-4" id="error-message">签到二维码无效或已过期</p>
+                        <button id="close-error-modal" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            确定
+                        </button>
+                    </div>
+                    <div id="loading-result" class="text-center">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4">
+                            <i class="fa fa-spinner text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">正在处理</h3>
+                        <p class="text-gray-500">正在验证签到信息，请稍候...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 扫码摄像头模态框 -->
+        <div id="scan-modal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+            <div class="max-w-2xl w-full mx-4">
+                <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">扫描签到二维码</h3>
+                        <button id="close-scan-modal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <i class="fa fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div id="video-container" class="w-full h-80 bg-gray-900 rounded-lg relative">
+                            <video id="scan-video" class="w-full h-full object-cover"></video>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-64 h-64 border-4 border-primary rounded-md relative">
+                                    <div class="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-primary"></div>
+                                    <div class="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-primary"></div>
+                                    <div class="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-primary"></div>
+                                    <div class="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-primary"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-center text-sm text-gray-500 mt-3">请将二维码对准扫描框</p>
+                    </div>
+                    <div class="p-4 border-t border-gray-200 flex justify-center">
+                        <button id="switch-camera" class="flex items-center text-gray-700 hover:text-primary transition-colors duration-300 mr-4">
+                            <i class="fa fa-refresh mr-2"></i> 切换摄像头
+                        </button>
+                        <button id="cancel-scan" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-gray-300">
+                            取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">二维码签到系统</h3>
+                    <p class="text-gray-400">简化签到流程，提升课堂效率</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">首页</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">关于我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">帮助中心</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-gray-400">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <span>contact@qrsignin.com</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>400-123-4567</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2025 二维码签到系统 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 引入AttendanceSystem类
+        document.addEventListener('DOMContentLoaded', function() {
+            const system = new AttendanceSystem();
+            system.init();
+        });
+    </script>
+    <!-- 引入系统类 -->
+    <script src="AttendanceSystem.js"></script>
+    
+    <!-- 初始化系统 -->
+    <script>
+        window.onload = function() {
+            const system = new AttendanceSystem();
+            system.init();
+        };
+    </script>
+</body>
+</html>
+    
