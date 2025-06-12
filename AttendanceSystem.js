@@ -501,7 +501,7 @@ class AttendanceSystem {
         // 生成唯一ID
         const id = `CI${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${Math.floor(100 + Math.random() * 900)}`;
         
-        // 创建新签到
+        
         const newCheckin = {
             id,
             title,
@@ -510,7 +510,7 @@ class AttendanceSystem {
             duration,
             students: []
         };
-        
+
         this.currentCheckin = newCheckin;
         this.checkins.push(newCheckin);
         
@@ -524,7 +524,23 @@ class AttendanceSystem {
         
         // 开始倒计时
         this.startCountdown(duration);
-    }
+
+        // 模拟异步校验（如检查标题是否重复）
+        return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const isTitleDuplicate = this.checkins.some(c => c.title === title);
+            if (isTitleDuplicate) {
+                alert('签到标题已存在');
+                reject();
+            } else {
+                // 生成 newCheckin 并 push
+                this.checkins.push(newCheckin);
+                resolve();
+            }
+        }, 1000);
+        });
+        
+        }
     
     generateQRCode(data) {
     const qrCodeElement = document.getElementById('qr-code');
@@ -736,7 +752,7 @@ class AttendanceSystem {
     simulateQRCodeDetection() {
         // 随机决定是否成功扫描
         const isSuccess = Math.random() > 0.3;
-        
+
          if (isSuccess) {
         // 关键逻辑：找活跃签到（未过期且存在的）
         const activeCheckin = this.checkins.find(c => {
@@ -745,7 +761,7 @@ class AttendanceSystem {
             return expireTime > new Date(); 
         });
         // 后续判断学生是否签到...
-    }
+        }
         
         if (isSuccess) {
             // 获取当前活跃的签到（如果有）
