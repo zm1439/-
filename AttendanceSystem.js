@@ -501,6 +501,9 @@ class AttendanceSystem {
         // 生成唯一ID
         const id = `CI${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${Math.floor(100 + Math.random() * 900)}`;
         
+        // ...生成 newCheckin
+        this.checkins.push(newCheckin);
+        localStorage.setItem('checkinsData', JSON.stringify(this.checkins));
         
         const newCheckin = {
             id,
@@ -908,5 +911,11 @@ class AttendanceSystem {
         // 模拟导出Excel功能
         alert('导出Excel功能已触发，实际应用中会生成并下载Excel文件');
     }
+
+    constructor() {
+    this.checkins = JSON.parse(localStorage.getItem('checkinsData')) || [];
+    // ...其他初始化逻辑
+    }
+
 }
     
