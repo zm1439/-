@@ -58,14 +58,14 @@ class AttendanceSystem {
         });
         
         // 添加模拟签到数据
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() );
+        const today = new Date();
+        today.setDate(today.getDate() );
         
         this.checkins.push({
             id: 'CI20250608001',
             title: '上午第一节课',
             creator: 'teacher1',
-            createTime: yesterday,
+            createTime: today,
             duration: 15,
             students: ['student1', 'student2']
         });
@@ -74,7 +74,7 @@ class AttendanceSystem {
             id: 'CI20250608002',
             title: '下午实验课',
             creator: 'teacher1',
-            createTime: yesterday,
+            createTime: today,
             duration: 20,
             students: ['student1']
         });
@@ -83,19 +83,19 @@ class AttendanceSystem {
         this.studentCheckins.push({
             checkinId: 'CI20250608001',
             studentId: 'student1',
-            checkinTime: new Date(yesterday.getTime() + 10 * 60 * 1000) // 创建后10分钟签到
+            checkinTime: new Date(today.getTime() + 10 * 60 * 1000) // 创建后10分钟签到
         });
         
         this.studentCheckins.push({
             checkinId: 'CI20250608001',
             studentId: 'student2',
-            checkinTime: new Date(yesterday.getTime() + 5 * 60 * 1000) // 创建后5分钟签到
+            checkinTime: new Date(today.getTime() + 5 * 60 * 1000) // 创建后5分钟签到
         });
         
         this.studentCheckins.push({
             checkinId: 'CI20250608002',
             studentId: 'student1',
-            checkinTime: new Date(yesterday.getTime() + 15 * 60 * 1000) // 创建后15分钟签到
+            checkinTime: new Date(today.getTime() + 15 * 60 * 1000) // 创建后15分钟签到
         });
     }
     
@@ -771,9 +771,9 @@ class AttendanceSystem {
         // 后续判断学生是否签到...
         }
         const activeCheckin = this.checkins.find(c => {
-        const createTime = new Date(c.createTime);
-         const expireTime = new Date(createTime.getTime() + c.duration * 60 * 1000);
-        return c.creator === 'teacher1' && expireTime > new Date(); // 增加创建者验证
+            const createTime = new Date(c.createTime);
+            const expireTime = new Date(createTime.getTime() + c.duration * 60 * 1000);
+            return c.creator === 'teacher1' && expireTime > new Date(); // 增加创建者验证
         });
         
         if (isSuccess) {
