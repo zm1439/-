@@ -59,7 +59,7 @@ class AttendanceSystem {
         
         // 添加模拟签到数据
         const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setDate(yesterday.getDate() );
         
         this.checkins.push({
             id: 'CI20250608001',
