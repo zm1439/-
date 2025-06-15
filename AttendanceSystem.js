@@ -176,18 +176,18 @@ class AttendanceSystem {
         
         // 欢迎页面
         document.getElementById('teacher-btn').addEventListener('click', () => {
-            if (this.currentUser && this.currentUser.type === 'teacher') {
+        if (this.currentUser && this.currentUser.type === 'teacher') {
                 this.showTeacherDashboard();
             } else {
-                this.showLoginPage();
+            this.showLoginPage();
             }
         });
-        
+
         document.getElementById('student-btn').addEventListener('click', () => {
-            if (this.currentUser && this.currentUser.type === 'student') {
-                this.showStudentDashboard();
-            } else {
-                this.showLoginPage();
+        if (this.currentUser && this.currentUser.type === 'student') {
+            this.showStudentDashboard();
+        } else {
+            this.showLoginPage();
             }
         });
         
