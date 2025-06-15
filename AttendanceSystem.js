@@ -544,10 +544,7 @@ class AttendanceSystem {
         });
 
         }
-    constructor() {
-        this.checkins = JSON.parse(localStorage.getItem('checkinsData')) || [];
-        // ...其他初始化逻辑
-    }
+    
         
     
     generateQRCode(data) {
